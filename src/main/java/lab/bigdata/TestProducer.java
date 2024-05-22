@@ -12,12 +12,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 public class TestProducer {
     public static void main(String[] args) {
-        if (args.length < 5) {
-            System.out.println("Należy podać pięć parametrów: " +
-                    "inputDir sleepTime topicName headerLength bootstrapServers");
-            System.exit(0);
-        }
-        String inputDir = "";
+//        if (args.length < 5) {
+//            System.out.println("Należy podać pięć parametrów: " +
+//                    "inputDir sleepTime topicName headerLength bootstrapServers");
+//            System.exit(0);
+//        }
+        String inputDir = "data/netflix/tests";
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
         props.put("acks", "all");
@@ -37,10 +37,14 @@ public class TestProducer {
         for (final String fileName : listOfPaths) {
             try (Stream<String> stream = Files.lines(Paths.get(fileName)).
                     skip(0)) {
-                stream.forEach(line -> producer.send(
-                        new ProducerRecord<>("NetflixInput",
-                        Integer.toString(1), Integer.toString(1))
-                ));
+                stream.forEach(line ->
+                        {
+                            System.out.println(line);
+                            producer.send(
+                                    new ProducerRecord<>("NetflixInput", String.valueOf(line.hashCode()), line)
+                            );
+                        }
+                        );
                 TimeUnit.SECONDS.sleep(15);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
