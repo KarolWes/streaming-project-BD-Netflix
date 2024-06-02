@@ -1,21 +1,22 @@
+CLUSTER_NAME=$(/usr/share/google/get_metadata_value attributes/dataproc-cluster-name)
 declare -a topics=("NetflixInput" "OutputAnomalies")
 
 for i in "${topics[@]}"
 do
-  existing_topic_check=$(docker exec kafka kafka-topics.sh --list --zookeeper zookeeper:2181 | grep "$i")
+  existing_topic_check=$( /usr/lib/kafka/bin/kafka-topics.sh --bootstrap-server ${CLUSTER_NAME}-w-0:9092 --list| grep "$i")
   if [ -n "$existing_topic_check" ]; then
       # Delete the existing topic
-      docker exec kafka kafka-topics.sh --delete --topic "$i" --zookeeper zookeeper:2181
+      /usr/lib/kafka/bin/kafka-topics.sh --bootstrap-server ${CLUSTER_NAME}-w-0:9092 --delete --topic "$i"
       echo "Deleted existing topic: $i"
   else
       echo "Topic '$i' does not exist."
   fi
 
   # Create a new topic
-  docker exec kafka kafka-topics.sh --create --topic "$i" --partitions 1 --replication-factor 1 --zookeeper zookeeper:2181
+  /usr/lib/kafka/bin/kafka-topics.sh --bootstrap-server ${CLUSTER_NAME}-w-0:9092 --create --topic "$i" --partitions 1 --replication-factor 1
   echo "Created new topic: $i"
 done
 
 echo "Currently existing topics: "
-docker exec kafka kafka-topics.sh --list --zookeeper zookeeper:2181
+/usr/lib/kafka/bin/kafka-topics.sh --bootstrap-server ${CLUSTER_NAME}-w-0:9092 --list
 read -p "Press enter to continue"

@@ -16,6 +16,8 @@ import utils.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import static utils.Connector.getMySQLSink;
+
 
 public class NetflixAnalyzer {
     public static void main(String[] args) throws Exception {
@@ -26,7 +28,7 @@ public class NetflixAnalyzer {
 
         final StreamExecutionEnvironment senv = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        ParameterTool properties = ParameterTool.fromPropertiesFile("Consumer/src/main/resources/flink.properties");
+        ParameterTool properties = ParameterTool.fromPropertiesFile("/src/main/resources/flink.properties");
 
 
         FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(
@@ -66,7 +68,7 @@ public class NetflixAnalyzer {
                 .window(new MonthlyWindowAssigner())
                 .aggregate(new AggregatorETL()); // nie działa
 
-        aggregated.print();
+        aggregated.addSink(getMySQLSink(properties));
 
 //        DataStream<TEMPEtl> noWindow = scores.keyBy(c-> c.key)
 //                .map(c->new TEMPEtl(c.getMovieId(), c.getTitle(), c.getDate(), 1L, Long.valueOf(c.getRate()), new ArrayList<>(c.getUserId())));
