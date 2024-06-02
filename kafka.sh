@@ -1,4 +1,4 @@
-declare -a topics=("NetflixInput" "output")
+declare -a topics=("NetflixInput" "OutputAnomalies")
 
 for i in "${topics[@]}"
 do

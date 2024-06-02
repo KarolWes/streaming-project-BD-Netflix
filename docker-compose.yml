@@ -18,3 +18,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     links:
       - zookeeper
+
+  mysql:
+    image: library/mysql:latest
+    container_name: mysql
+    ports:
+      - "6033:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: etl
+      MYSQL_USER: streamuser
+      MYSQL_PASSWORD: stream
