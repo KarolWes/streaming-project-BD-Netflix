@@ -6,11 +6,14 @@ import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import org.apache.flink.util.Collector;
 import utils.*;
 
 import java.util.ArrayList;
@@ -28,7 +31,7 @@ public class NetflixAnalyzer {
 
         final StreamExecutionEnvironment senv = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        ParameterTool properties = ParameterTool.fromPropertiesFile("/src/main/resources/flink.properties");
+        ParameterTool properties = ParameterTool.fromPropertiesFile("Consumer/src/main/resources/flink.properties");
 
 
         FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(
@@ -64,11 +67,12 @@ public class NetflixAnalyzer {
                 .flatMap(new Combiner())
                 .assignTimestampsAndWatermarks(new DelayWatermarkGenerator());
 
-        DataStream<EtlAgg> aggregated = scores.keyBy(CombinedData::getTitle)
-                .window(new MonthlyWindowAssigner())
+        DataStream<EtlAgg> aggregated = scores.keyBy(CombinedData::getUserId)
+                .window(new MonthlyWindowAssigner(properties.get("delay")))
                 .aggregate(new AggregatorETL()); // nie działa
 
-        aggregated.addSink(getMySQLSink(properties));
+        //aggregated.addSink(getMySQLSink(properties));
+        aggregated.print();
 
 //        DataStream<TEMPEtl> noWindow = scores.keyBy(c-> c.key)
 //                .map(c->new TEMPEtl(c.getMovieId(), c.getTitle(), c.getDate(), 1L, Long.valueOf(c.getRate()), new ArrayList<>(c.getUserId())));
@@ -85,7 +89,15 @@ public class NetflixAnalyzer {
 
         DataStream<AnomalyData> anomalies = scores.keyBy(CombinedData::getTitle) // ta linia też nie działa
                 .window(SlidingEventTimeWindows.of(Time.days(D), Time.days(1)))
-                .aggregate(new AggregatorAnomaly())
+                .aggregate(new AggregatorAnomaly(), new ProcessWindowFunction<AnomalyData, AnomalyData, String, TimeWindow>() {
+                    @Override
+                    public void process(String key, Context context, Iterable<AnomalyData> elements, Collector<AnomalyData> out) {
+                        AnomalyData result = elements.iterator().next(); // assuming there is always one element
+                        result.setWindowStart(String.valueOf(context.window().getStart()));
+                        result.setWindowEnd(String.valueOf(context.window().getEnd()));
+                        out.collect(result);
+                    }
+                })
                 .filter(a -> a.getRateAvg() >= O).filter(a -> a.getRateCount() >= L);
 
 

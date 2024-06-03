@@ -14,12 +14,17 @@ import java.util.Date;
 
 public class MonthlyWindowAssigner extends WindowAssigner<Object, TimeWindow> {
 
+    private final String delay;
     public long milisInDay = 1000L*60*60*24;
+
+    public MonthlyWindowAssigner(String delay) {
+        this.delay = delay;
+    }
 
     private int numberOfDays(long timestamp){
         Date d = new Date(timestamp);
         int m = d.getMonth();
-        int y = d.getYear();
+        int y = d.getYear() + 1900;
         boolean special = y%4 == 0 && y%100 != 0 || y%400 == 0;
         switch(m){
             case 1:
@@ -43,7 +48,7 @@ public class MonthlyWindowAssigner extends WindowAssigner<Object, TimeWindow> {
 
     @Override
     public Trigger<Object, TimeWindow> getDefaultTrigger(StreamExecutionEnvironment env) {
-        return EventTimeTrigger.create();
+        return delay.equals("A") ? EveryTrigger.create() : EventTimeTrigger.create();
     }
 
     @Override

@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DelayWatermarkGenerator implements WatermarkStrategy<CombinedData> {
-    private static final long MAX_DELAY = 6000L; // 1 minute = 60000L
+    private static final long MAX_DELAY = 1000L*60*60*24; // 1 minute = 60000L
     private long currentMaxTimestamp = 0L;
 
     @Override

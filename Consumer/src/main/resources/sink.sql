@@ -1,6 +1,10 @@
+mysql -uroot -padmin
 CREATE USER 'streamuser'@'%' IDENTIFIED BY 'stream';
 CREATE DATABASE IF NOT EXISTS etl CHARACTER SET utf8;
-GRANT ALL ON streamdb.* TO 'streamuser'@'%';
+GRANT ALL ON etl.* TO 'streamuser'@'%';
+exit
+
+mysql -u streamuser -p etl
 
 create table netflix_sink
 (
@@ -11,3 +15,10 @@ create table netflix_sink
     rate_sum       bigint,
     reviewer_count bigint
 );
+exit
+
+
+mysql -u streamuser -p streamdb
+use etl;
+select * from netflix_sink;
+exit
