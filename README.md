@@ -1,3 +1,11 @@
+# Netflix Prizes
+#### Przetwarzanie strumieni danych Big Data @PUT
+#### prowadzone przez dra. Krzysztofa Jankiewicza, PUT
+#### Opracowane przez ..., PUT
+#### Semestr Letni 2024
+
+Uwaga przed rozpoczęciem: pliki .jar są duże, lepiej wgrać je na zasobnik, i przekopiować do maszyny wirtualnej.
+
 Aby uruchomić klaster na Google Cloud użyj:
 ```shell
 gcloud dataproc clusters create ${CLUSTER_NAME} \
@@ -17,6 +25,8 @@ gs://goog-dataproc-initialization-actions-${REGION}/kafka/kafka.sh
 3. Utwórz folder `mkdir -p Producer/src/main/resources` i utwórz w nim plik `kafka.properties`, do którego skopiuj zawartość pliku `kafka.properties` dołączonego do rozwiązania. Ustaw parametr `input.dir` na ścieżkę do folderu z danymi (plikami csv).
 4. Wgraj plik `producer.jar`
 
+(Całość w pliku `kafka-run.sh`)
+
 ### Odbiorca - baza danych
 1. Utwórz folder na dane wynikowe `mkdir -p /tmp/datadir`
 2. Na terminalu odbiorczym uruchom kontener MySQL (hasło `admin`)
@@ -33,7 +43,8 @@ GRANT ALL ON etl.* TO 'streamuser'@'%';
 ```
 5. Poleceniem `exit` wyloguj się z konsoli i zaloguj ponownie na konto użytkownika streamuser `mysql -u streamuser -p etl`
 6. Utwórz tabelę wynikową za pomocą polecenia `CREATE TABLE` z pliku `sink.sql` i wyloguj się poleceniem `exit`. Zamknij klaster poleceniem `exit`.
-
+   
+(Całość w plikach `db-run.sh` i `sink.sql`)
 ### Odbiorca - kafka
 Temat wynikowy kafki został utworzony skryptem `kafka.sh`. 
 
@@ -57,7 +68,7 @@ Exception in thread "main" java.lang.NullPointerException
 	at TestProducer.main(TestProducer.java:21)
 ```
 oznacza źle zdefiniowaną ścieżkę do plików danych w `kafka.properties`
-
+(Całość w pliku `main.sh`)
 
 ## Wyniki
 Anomalie są zbierane przez temat kafki. Aby je odebrać, na terminalu odbiorczym uruchom polecenie:
@@ -66,6 +77,8 @@ Anomalie są zbierane przez temat kafki. Aby je odebrać, na terminalu odbiorczy
  --bootstrap-server {CLUSTER_NAME}-w-0:9092 \
  --topic OutputAnomalies
 ```
+(Plik `kafka-receiver.sh`)
+
 Nazwę klastra najlepiej wpisać ręczenie.
 Wyniki przetwarzania czasu rzeczywistego zbierane są w bazie danych MySQL.
 Aby je otworzyć, zaloguj się do konsoli MySQL `mysql -u streamuser -p streamdb` i uruchom polecenie select z pliku `sink.sql`
@@ -74,5 +87,19 @@ select * from netflix_sink;
 ```
 Gdyby pojawiło się ostrzeżenie o niewybranej bazie danych, użyj polecenia `use etl;`.
 
-## Uwagi
+## Uzasadnienie
+Zdecydowałem się na użycie bazy MySQL jako miejsca przechowywania wyników przetwarzania czasu rzeczywistego z kilku powodów.
+* Wydajność: MySQL jest optymalizowany pod kątem szybkich operacji odczytu i zapisu, co jest kluczowe dla przetwarzania danych w czasie rzeczywistym.
+* Skalowalność: Może obsługiwać duże ilości danych i ruch sieciowy, co jest ważne przy pracy ze strumieniami danych.
+* Niezawodność: Jest to sprawdzona technologia z dobrą reputacją pod względem stabilności i bezpieczeństwa.
+* Wsparcie społeczności: Posiada dużą społeczność użytkowników i programistów, co oznacza, że istnieje wiele zasobów i źródeł wsparcia dostępnych dla użytkowników.
+* Integrowalość: Apache Flink dostarcza łatwych w obsłudze connectorów, umożliwiających połączenie z bazą.
 
+## Uwagi końcowe
+Proces przetwarzania niekoniecznie jest optymalny
+
+W folderze pics znajdują się zrzuty ekranu, prezentujące działanie programu dla poszczególnych jego aspektów, tj. przetwarzania etl, zapisu do bazy danych (`db.png`) i odczytu tematu kafki z anomaliami.
+
+Gdyby na temacie kafki z anomaliami nie pojawiały się dane, spróbuj ustawić parametry wywołania programu na `* (cokolwiek), 1, 4`. Jeżeli nadal nie ma wyników, znaczy, że nie działa i błąd jest po mojej stronie.
+
+Testowane lokalnie na dockerze i w chmurze google

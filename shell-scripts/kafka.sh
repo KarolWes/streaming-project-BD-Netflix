@@ -1,3 +1,6 @@
+/usr/lib/kafka/bin/kafka-server-stop.sh
+/usr/lib/kafka/bin/kafka-server-start.sh
+
 CLUSTER_NAME=$(/usr/share/google/get_metadata_value attributes/dataproc-cluster-name)
 declare -a topics=("NetflixInput" "OutputAnomalies")
 

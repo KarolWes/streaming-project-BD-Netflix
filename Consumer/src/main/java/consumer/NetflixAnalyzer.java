@@ -1,7 +1,6 @@
 package consumer;
 import models.*;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -15,9 +14,6 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
 import utils.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 import static utils.Connector.getMySQLSink;
 
@@ -67,24 +63,12 @@ public class NetflixAnalyzer {
                 .flatMap(new Combiner())
                 .assignTimestampsAndWatermarks(new DelayWatermarkGenerator());
 
-        DataStream<EtlAgg> aggregated = scores.keyBy(CombinedData::getUserId)
+        DataStream<EtlAgg> aggregated = scores.keyBy(CombinedData::getMovieId)
                 .window(new MonthlyWindowAssigner(properties.get("delay")))
                 .aggregate(new AggregatorETL()); // nie działa
 
-        //aggregated.addSink(getMySQLSink(properties));
-        aggregated.print();
-
-//        DataStream<TEMPEtl> noWindow = scores.keyBy(c-> c.key)
-//                .map(c->new TEMPEtl(c.getMovieId(), c.getTitle(), c.getDate(), 1L, Long.valueOf(c.getRate()), new ArrayList<>(c.getUserId())));
-//        DataStream<EtlAgg>noWindowAggs = noWindow.keyBy(TEMPEtl::getMovieId)
-//                .reduce((ReduceFunction<TEMPEtl>) (tempEtl, t1) -> {
-//                    tempEtl.setRateCount(tempEtl.getRateCount() + t1.getRateCount());
-//                    tempEtl.setRateSum(tempEtl.getRateSum() + t1.getRateSum());
-//                    tempEtl.addAllReviewers(t1.getReviewers());
-//                    return tempEtl;
-//                }).map(c-> new EtlAgg(c.getMovieId(), c.getTitle(), c.getDate(), c.getRateCount(), c.getRateSum(),
-//                        (long) new HashSet<>(c.getReviewers()).size()));
-//        noWindowAggs.print();
+        aggregated.addSink(getMySQLSink(properties));
+        // aggregated.print();
 
 
         DataStream<AnomalyData> anomalies = scores.keyBy(CombinedData::getTitle) // ta linia też nie działa
