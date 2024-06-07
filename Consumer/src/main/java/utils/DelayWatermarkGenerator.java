@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class DelayWatermarkGenerator implements WatermarkStrategy<CombinedData> {
     private static final long MAX_DELAY = 1000L*60*60*24; // 1 minute = 60000L
-    private long currentMaxTimestamp = 0L;
+    private long currentMaxTimestamp = Long.MIN_VALUE;
 
     @Override
     public TimestampAssigner<CombinedData> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
@@ -47,6 +47,9 @@ public class DelayWatermarkGenerator implements WatermarkStrategy<CombinedData> 
     }
 
     private class MyWatermarkGenerator implements WatermarkGenerator<CombinedData> {
+        public MyWatermarkGenerator() {
+        }
+
         @Override
         public void onEvent(CombinedData cd, long eventTimestamp, WatermarkOutput output) {
             currentMaxTimestamp = Math.max(getTimestamp(cd.getDate()), currentMaxTimestamp);
@@ -54,7 +57,9 @@ public class DelayWatermarkGenerator implements WatermarkStrategy<CombinedData> 
 
         @Override
         public void onPeriodicEmit(WatermarkOutput output) {
-            output.emitWatermark(new Watermark(currentMaxTimestamp - MAX_DELAY - 1));
+            if(currentMaxTimestamp != Long.MIN_VALUE){
+                output.emitWatermark(new Watermark(currentMaxTimestamp - MAX_DELAY));
+            }
         }
     }
 }

@@ -56,11 +56,12 @@ wget https://repo1.maven.org/maven2/org/apache/flink/flink-connector-jdbc/1.15.4
 wget https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.2.0/mysql-connector-j-8.2.0.jar
 sudo cp ~/*-*.jar /usr/lib/flink/lib/
 ```
-2. Utwórz plik właściwości w lokalizacji `Consumer/src/main/resources/flink.properties` i wgraj do niego zawartość załączonego pliku flink.properties. Upewnij się, że ścieżka do pliku `movie_titles.csv` jest ustawiona poprawnie. Ostatni parametr, czyli `delay` realizuje różne wyzwalacze. Ustaw go na 'C' lub 'A';
-3. Wgraj plik `Consumer.jar` i uruchom go poleceniem `java -jar`. Jako parametry wywołania podaj trzy liczby, które preprezentują odpowiednio:
-   * Szerokość okna analizy anomalii (w dniach)
-   * Ilość wymaganych obserwacji
-   * Minimalną średnią ocen
+2. Utwórz plik właściwości w lokalizacji `Consumer/src/main/resources/flink.properties` i wgraj do niego zawartość załączonego pliku flink.properties. Upewnij się, że ścieżka do pliku `movie_titles.csv` jest ustawiona poprawnie.
+3. Wgraj plik `Consumer.jar` i uruchom go poleceniem `flink run` ze skryptu `consumer-run.sh`. Skrypt przyjmuje cztery parametry:
+   * D - Szerokość okna analizy anomalii (w dniach)
+   * L - Ilość wymaganych obserwacji
+   * O - Minimalną średnią ocen
+   * delay - tryb wyzwalacza: A = wyzwalacz natychmiastowy, C = wyzwalacz kompletności, 
 4. Z innego terminala uruchom plik `Producer.jar`. Uwaga: Błąd
 ```
 Exception in thread "main" java.lang.NullPointerException

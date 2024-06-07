@@ -21,14 +21,17 @@ import static utils.Connector.getMySQLSink;
 public class NetflixAnalyzer {
     public static void main(String[] args) throws Exception {
 
-        int D = Integer.parseInt(args[0]);
-        int L = Integer.parseInt(args[1]);
-        double O = Double.parseDouble(args[2]);
+
 
         final StreamExecutionEnvironment senv = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        ParameterTool properties = ParameterTool.fromPropertiesFile("Consumer/src/main/resources/flink.properties");
+        ParameterTool propertiesFile = ParameterTool.fromPropertiesFile("Consumer/src/main/resources/flink.properties");
+        ParameterTool propertiesArgs = ParameterTool.fromArgs(args);
+        ParameterTool properties = propertiesFile.mergeWith(propertiesArgs);
 
+        int D = Integer.parseInt(properties.get("D"));
+        int L = Integer.parseInt(properties.get("L"));
+        double O = Double.parseDouble(properties.get("O"));
 
         FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(
                 "NetflixInput",
@@ -68,7 +71,7 @@ public class NetflixAnalyzer {
                 .aggregate(new AggregatorETL()); // nie działa
 
         aggregated.addSink(getMySQLSink(properties));
-        // aggregated.print();
+        //aggregated.print();
 
 
         DataStream<AnomalyData> anomalies = scores.keyBy(CombinedData::getTitle) // ta linia też nie działa

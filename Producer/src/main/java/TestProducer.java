@@ -27,8 +27,9 @@ public class TestProducer {
                 stream.forEach(line ->
                         {
                             System.out.println(line);
+                            String code = line.split(",")[1];
                             producer.send(
-                                    new ProducerRecord<>("NetflixInput", String.valueOf(line.hashCode()), line)
+                                    new ProducerRecord<>("NetflixInput", code, line)
                             );
                         }
                         );
