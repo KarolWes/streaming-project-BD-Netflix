@@ -155,6 +155,8 @@ Zasadniczo do pełnej obsługi programu potrzebne są cztery terminale:
 * Dla odbiorcy kafki
 * Do wglądu w bazę danych z wynikami
 
+Pliki .jar znajdują się w folderze `out`.
+
 Aby uruchomić producenta kafki, należy użyć następującego polecenia:
 ```shell
 export HADOOP_CONF_DIR=/etc/hadoop/conf
@@ -185,7 +187,10 @@ ustawiając parametry wywołania na takie, jakie chcemy. Parametry to:
 * D - Szerokość okna analizy anomalii (w dniach)
 * L - Ilość wymaganych obserwacji
 * O - Minimalną średnią ocen
-* delay - tryb wyzwalacza: A = wyzwalacz natychmiastowy, C = wyzwalacz kompletności,
+* delay - tryb wyzwalacza: A = wyzwalacz natychmiastowy, C = wyzwalacz kompletności
+
+Gdyby program nie był w stanie znaleźć ścieżki pliku z danymi (movie_titles.csv), to należy podać ścieżkę bezwzględną z zasobnika (tj. gs://{bucket}/ścieżka/do/pliku)
+Plik `Consumer_print.jar` zawiera testową wersję programu, tj. taką, która w teorii nie łączy się z bazą, tylko produkuje dane na konsolę. 
 
 ## Wyniki
 Anomalie są zbierane przez temat kafki. Aby je odebrać, na terminalu odbiorczym uruchom polecenie:

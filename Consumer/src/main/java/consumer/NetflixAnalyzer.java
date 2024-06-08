@@ -84,8 +84,8 @@ public class NetflixAnalyzer {
                 .window(new MonthlyWindowAssigner(properties.get("delay")))
                 .aggregate(new AggregatorETL());
 
-        // aggregated.addSink(getMySQLSink(properties));
-        aggregated.print();
+        aggregated.addSink(getMySQLSink(properties));
+        // aggregated.print();
 
 
         DataStream<AnomalyData> anomalies = scores.keyBy(CombinedData::getTitle)
