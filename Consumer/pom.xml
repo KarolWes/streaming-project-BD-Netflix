@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-jdbc</artifactId>
-            <version>${flink.version}</version>
+            <version>1.15.0</version>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>
@@ -51,8 +51,14 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka</artifactId>
-            <version>3.1.0-1.18</version>
+            <version>${flink.version}</version>
         </dependency>
     </dependencies>
+    <build>
+        <finalName>Consumer</finalName>
+        <plugins>
+
+        </plugins>
+    </build>
 
 </project>

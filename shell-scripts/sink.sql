@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS etl CHARACTER SET utf8;
 GRANT ALL ON etl.* TO 'streamuser'@'%';
 exit
 
-mysql -u streamuser -p etl
+mysql -ustreamuser -pstream etl
 
 create table netflix_sink
 (
