@@ -2,7 +2,7 @@ chmod +777 kafka.sh
 ./kafka.sh
 mkdir data
 cd data
-hadoop fs -copyToLocal gs://pbd-23-kw/project-netflix
+hadoop fs -copyToLocal gs://{bucket}/ścieżka
 cd ..
 mkdir -p Producer/src/main/resources
 nano Producer/src/main/resources/kafka.properties

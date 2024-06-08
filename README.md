@@ -61,7 +61,7 @@ wget https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.33/mysql-con
 wget https://repo1.maven.org/maven2/org/apache/flink/flink-connector-kafka/1.15.4/flink-connector-kafka-1.15.4.jar
 sudo cp ~/*-*.jar /usr/lib/flink/lib/
 ```
-2. Utwórz plik właściwości w lokalizacji `Consumer/src/main/resources/flink.properties` i wgraj do niego zawartość załączonego pliku flink.properties. Upewnij się, że ścieżka do pliku `movie_titles.csv` jest ustawiona poprawnie.
+2. Utwórz plik właściwości w lokalizacji `Consumer/src/main/resources/flink.properties` i wgraj do niego zawartość załączonego pliku flink.properties. Upewnij się, że ścieżka do pliku `movie_titles.csv` jest ustawiona poprawnie (powinna czerpać z zasobnika, nie z pamięci klastra). Dodatkowo ważne jest poprawne ustawienie adresu bazy danych. Można go odczytać poleceniem `hostname -I`
 3. Wgraj plik `Consumer.jar`
    
 (Całość w pliku `consumer-run.sh`)
@@ -222,7 +222,6 @@ Zdecydowałem się na użycie bazy MySQL jako miejsca przechowywania wyników pr
 * Wsparcie społeczności: Posiada dużą społeczność użytkowników i programistów, co oznacza, że istnieje wiele zasobów i źródeł wsparcia dostępnych dla użytkowników.
 * Integrowalość: Apache Flink dostarcza łatwych w obsłudze connectorów, umożliwiających połączenie z bazą.
 
-Po uruchomieniu na chmurze google okazuje się, że connectory jednak nie są kompatybilne z systemem, co nie pozwala programowi się uruchomić. 
 
 ## Uwagi końcowe
 Proces przetwarzania niekoniecznie jest optymalny

@@ -21,4 +21,3 @@ done
 
 echo "Currently existing topics: "
 /usr/lib/kafka/bin/kafka-topics.sh --bootstrap-server ${CLUSTER_NAME}-w-0:9092 --list
-read -p "Press enter to continue"
