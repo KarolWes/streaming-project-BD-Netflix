@@ -68,9 +68,10 @@ sudo cp ~/*-*.jar /usr/lib/flink/lib/
 
 ## Kod
 ### 1. Transformacje
-Dane dostarczane z tematu kafki są niesformatowanymi stringami. Pierwszym etapem pretwarzania jest wyłuskanie pól z ciągów znaków. Jest to wykonane przez proste mapowanie"
+Dane dostarczane z tematu kafki są niesformatowanymi stringami. Pierwszym etapem przetwarzania jest wyłuskanie pól z ciągów znaków. Jest to wykonane przez proste mapowanie"
 ```java
- DataStream<PrizeData> rates = senv.fromSource(consumer, WatermarkStrategy.noWatermarks(), "Rates Source")
+ DataStream<PrizeData> rates = senv.fromSource(consumer, 
+                WatermarkStrategy.noWatermarks(), "Rates Source")
                 .filter(a -> !a.startsWith("date"))
                 .filter(a -> !a.contains("NULL"))
                 .map(line -> line.split(","))
@@ -98,8 +99,8 @@ DataStream<EtlAgg> aggregated = scores.keyBy(CombinedData::getMovieId)
                 .window(new MonthlyWindowAssigner(properties.get("delay")))
                 .aggregate(new AggregatorETL());
 
-        // aggregated.addSink(getMySQLSink(properties));
-        aggregated.print();
+        aggregated.addSink(getMySQLSink(properties));
+        //aggregated.print();
 ```
 `MonthlyWindowAssigner` jest klasą, która na podstawie daty ustawia okno przetwarzania na okres jednego miesiąca faktycznego (tj. od 1 do ostatniego dnia danego miesiąca kalendarzowego, z uwzględnieniem lat przestępnych).
 Zmienna `delay` definiuje tryb wyzwalacza (więcej o tym w następnej sekcji).
@@ -126,15 +127,17 @@ Ich obsługa jest zapewniona w budowie generatora okien:
     }
 ```
 Domyślny `EventTimeTrigger` generuje okna dopiero po minięciu czasu, który obejmują, natomiast samodzielnie deklarowany `EveryTrigger` skutkuje wypluciem wyniku po przyjściu każdego zdarzenia.
-### 3. Wykrywanie Anomalii
+### 3. Wykrywanie anomalii
 Kod wykrywający anomalie jest zasadniczo zbliżony do tego przetwarzającego zdarzenia czasu rzeczywistego. 
 ```java
  DataStream<AnomalyData> anomalies = scores.keyBy(CombinedData::getTitle)
                 .window(SlidingEventTimeWindows.of(Time.days(D), Time.days(1)))
-                .aggregate(new AggregatorAnomaly(), new ProcessWindowFunction<AnomalyData, AnomalyData, String, TimeWindow>() {
+                .aggregate(new AggregatorAnomaly(), 
+                        new ProcessWindowFunction<AnomalyData, AnomalyData, String, TimeWindow>() {
                     @Override
-                    public void process(String key, Context context, Iterable<AnomalyData> elements, Collector<AnomalyData> out) {
-                        AnomalyData result = elements.iterator().next(); // assuming there is always one element
+                    public void process(String key, Context context, Iterable<AnomalyData> elements, 
+                                        Collector<AnomalyData> out) {
+                        AnomalyData result = elements.iterator().next();
                         result.setWindowStart(String.valueOf(context.window().getStart()));
                         result.setWindowEnd(String.valueOf(context.window().getEnd()));
                         out.collect(result);
@@ -154,8 +157,6 @@ Zasadniczo do pełnej obsługi programu potrzebne są cztery terminale:
 * Dla programu przetwarzającego
 * Dla odbiorcy kafki
 * Do wglądu w bazę danych z wynikami
-
-Pliki .jar znajdują się w folderze `out`.
 
 Aby uruchomić producenta kafki, należy użyć następującego polecenia:
 ```shell
